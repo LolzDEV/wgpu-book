@@ -6,7 +6,8 @@
 
 - [Window Creation](./window.md)
 - [Wgpu Initialization](./wgpu_init.md)
-- [Pipeline]()
+- [Pipeline](./pipeline.md)
+    - [Rendering](./rendering.md)
     - [Shaders in detail]()
 - [Buffers]()
 - [Uniforms]()
