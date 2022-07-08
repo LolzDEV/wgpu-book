@@ -75,7 +75,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">Introduction</a></li><li class="chapter-item expanded affix "><li class="part-title">Basics</li><li class="chapter-item expanded "><a href="window.html"><strong aria-hidden="true">1.</strong> Window Creation</a></li><li class="chapter-item expanded "><a href="wgpu_init.html" class="active"><strong aria-hidden="true">2.</strong> Wgpu Initialization</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.</strong> Pipeline</div></li><li><ol class="section"><li class="chapter-item expanded "><div><strong aria-hidden="true">3.1.</strong> Shaders in detail</div></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.</strong> Buffers</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">5.</strong> Uniforms</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">6.</strong> Textures</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">7.</strong> Transformations</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">8.</strong> Coordinate space</div></li><li class="chapter-item expanded affix "><li class="part-title">Intermediate</li><li class="chapter-item expanded "><div><strong aria-hidden="true">9.</strong> Perspective camera</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">10.</strong> Meshes</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">11.</strong> Lighting</div></li><li class="chapter-item expanded affix "><li class="part-title">Examples</li><li class="chapter-item expanded "><div><strong aria-hidden="true">12.</strong> Snake game</div></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">Introduction</a></li><li class="chapter-item expanded affix "><li class="part-title">Basics</li><li class="chapter-item expanded "><a href="window.html"><strong aria-hidden="true">1.</strong> Window Creation</a></li><li class="chapter-item expanded "><a href="wgpu_init.html" class="active"><strong aria-hidden="true">2.</strong> Wgpu Initialization</a></li><li class="chapter-item expanded "><a href="pipeline.html"><strong aria-hidden="true">3.</strong> Pipeline</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="rendering.html"><strong aria-hidden="true">3.1.</strong> Rendering</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.2.</strong> Shaders in detail</div></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.</strong> Buffers</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">5.</strong> Uniforms</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">6.</strong> Textures</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">7.</strong> Transformations</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">8.</strong> Coordinate space</div></li><li class="chapter-item expanded affix "><li class="part-title">Intermediate</li><li class="chapter-item expanded "><div><strong aria-hidden="true">9.</strong> Perspective camera</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">10.</strong> Meshes</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">11.</strong> Lighting</div></li><li class="chapter-item expanded affix "><li class="part-title">Examples</li><li class="chapter-item expanded "><div><strong aria-hidden="true">12.</strong> Snake game</div></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -251,6 +251,18 @@ Before doing so I'd like to better organize the code so that it's easier to unde
 }
 <span class="boring">}
 </span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust edition2021">fn main() {
+    let event_loop = EventLoop::new();
+    let window = WindowBuilder::new()
+        .with_title(&quot;wgpu&quot;)
+        .build(&amp;event_loop)
+        .unwrap();
+
+    let renderer = Renderer::new(&amp;window); // NEW
+
+    ...
+}
+</code></pre></pre>
 
                     </main>
 
@@ -258,6 +270,9 @@ Before doing so I'd like to better organize the code so that it's easier to unde
                         <!-- Mobile navigation buttons -->
                             <a rel="prev" href="window.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
+                            </a>
+                            <a rel="next" href="pipeline.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
                             </a>
                         <div style="clear: both"></div>
                     </nav>
@@ -267,6 +282,9 @@ Before doing so I'd like to better organize the code so that it's easier to unde
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
                     <a rel="prev" href="window.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
+                    </a>
+                    <a rel="next" href="pipeline.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
 
