@@ -8,6 +8,8 @@
 - [Wgpu Initialization](./wgpu_init.md)
 - [Pipeline](./pipeline.md)
     - [Rendering](./rendering.md)
+    - [Creating the shader](./shader.md)
+    - [Creating a Pipeline]()
     - [Shaders in detail]()
 - [Buffers]()
 - [Uniforms]()
