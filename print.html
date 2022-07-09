@@ -76,7 +76,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">Introduction</a></li><li class="chapter-item expanded affix "><li class="part-title">Basics</li><li class="chapter-item expanded "><a href="window.html"><strong aria-hidden="true">1.</strong> Window Creation</a></li><li class="chapter-item expanded "><a href="wgpu_init.html"><strong aria-hidden="true">2.</strong> Wgpu Initialization</a></li><li class="chapter-item expanded "><a href="pipeline.html"><strong aria-hidden="true">3.</strong> Pipeline</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="rendering.html"><strong aria-hidden="true">3.1.</strong> Rendering</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.2.</strong> Shaders in detail</div></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.</strong> Buffers</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">5.</strong> Uniforms</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">6.</strong> Textures</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">7.</strong> Transformations</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">8.</strong> Coordinate space</div></li><li class="chapter-item expanded affix "><li class="part-title">Intermediate</li><li class="chapter-item expanded "><div><strong aria-hidden="true">9.</strong> Perspective camera</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">10.</strong> Meshes</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">11.</strong> Lighting</div></li><li class="chapter-item expanded affix "><li class="part-title">Examples</li><li class="chapter-item expanded "><div><strong aria-hidden="true">12.</strong> Snake game</div></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">Introduction</a></li><li class="chapter-item expanded affix "><li class="part-title">Basics</li><li class="chapter-item expanded "><a href="window.html"><strong aria-hidden="true">1.</strong> Window Creation</a></li><li class="chapter-item expanded "><a href="wgpu_init.html"><strong aria-hidden="true">2.</strong> Wgpu Initialization</a></li><li class="chapter-item expanded "><a href="pipeline.html"><strong aria-hidden="true">3.</strong> Pipeline</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="rendering.html"><strong aria-hidden="true">3.1.</strong> Rendering</a></li><li class="chapter-item expanded "><a href="shader.html"><strong aria-hidden="true">3.2.</strong> Creating the shader</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.3.</strong> Creating a Pipeline</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.4.</strong> Shaders in detail</div></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.</strong> Buffers</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">5.</strong> Uniforms</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">6.</strong> Textures</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">7.</strong> Transformations</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">8.</strong> Coordinate space</div></li><li class="chapter-item expanded affix "><li class="part-title">Intermediate</li><li class="chapter-item expanded "><div><strong aria-hidden="true">9.</strong> Perspective camera</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">10.</strong> Meshes</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">11.</strong> Lighting</div></li><li class="chapter-item expanded affix "><li class="part-title">Examples</li><li class="chapter-item expanded "><div><strong aria-hidden="true">12.</strong> Snake game</div></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -328,6 +328,58 @@ Rendering is done through some steps, each one processing the output of the prev
 <blockquote>
 <p><strong>Note:</strong> Wgpu also supports <strong>SPIR-V</strong> which is a specification made by the Khronos Group (the team behind OpenGL and Vulkan) so you can use any language which compiles to <strong>SPIR-V</strong> as shading language.</p>
 </blockquote>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="creating-the-shader"><a class="header" href="#creating-the-shader">Creating the shader</a></h1>
+<p>First, we need to add the pipeline as a member of our <code>Renderer</code></p>
+<pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct Renderer {
+    surface: wgpu::Surface,
+    surface_config: wgpu::SurfaceConfiguration,
+    device: wgpu::Device,
+    queue: wgpu::Queue,
+    render_pipeline: wgpu::RenderPipeline, // NEW
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>Next we need to create the shader module for our pipeline, let's create a new file</p>
+<p><em>src/shader.wgsl</em></p>
+<pre><code class="language-wgsl">struct VertexInput {
+    @location(0) pos: vec3&lt;f32&gt;,
+}
+</code></pre>
+<p>Here we're defining the input for our vertex stage, with the <code>@location(0)</code> attribute we're telling the shader where this position should be taken from, and since we are using this as input for our vertex stage the value will be taken from the first position (0) in the vertex input (we will define the input in rust later on).</p>
+<p>We also need to define an output for our stage</p>
+<p><em>src/shader.wgsl</em></p>
+<pre><code class="language-wgsl">...
+
+struct VertexOutput {
+    @builtin(position) pos: vec4&lt;f32&gt;
+}
+</code></pre>
+<p>Now we're using another attribte, <code>@builtin</code>. This attribute is used to speicfy that the value is one of the builtin values of wgsl.</p>
+<p><em>src/shader.wgsl</em></p>
+<pre><code class="language-wgsl">...
+
+@vertex
+fn vertex_main(in: VertexInput) -&gt; VertexOutput {
+    var out: VertexOutput;
+
+    out.pos = vec4&lt;f32&gt;(in.pos, 1.0);
+
+    return out;
+}
+</code></pre>
+<p>And finally we have our vertex stage defined, it will just take the position from the input and copy it in the output. With the <code>@vertex</code> attribute we're specifying that this part of the shader is in the vertex stage.</p>
+<p>Now that we have our vertex shader we need to create a <strong>fragment shader</strong>. As we said in the previous chapter, the fragment shader is needed to give a color to the pixels that compose the triangle we are drawing. In this example we're creating a fragment shader which has a fixed red color for every pixel we draw.</p>
+<p><em>src/shader.wgsl</em></p>
+<pre><code class="language-wgsl">...
+
+@fragment
+fn fragment_main(in: VertexOutput) -&gt; @location(0) vec4&lt;f32&gt; {
+    return vec4&lt;f32&gt;(1.0, 0.0, 0.0, 1.0);
+}
+</code></pre>
+<p>This is pretty easy, we're taking the output from the previous stage (vertex) as input for the fragment stage and we're returning the color red in RGBA.</p>
 
                     </main>
 

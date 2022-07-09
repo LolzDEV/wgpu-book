@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Rendering - Wgpu Book</title>
+        <title>Creating the shader - Wgpu Book</title>
         <!-- Custom HTML head -->
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="">
@@ -75,7 +75,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">Introduction</a></li><li class="chapter-item expanded affix "><li class="part-title">Basics</li><li class="chapter-item expanded "><a href="window.html"><strong aria-hidden="true">1.</strong> Window Creation</a></li><li class="chapter-item expanded "><a href="wgpu_init.html"><strong aria-hidden="true">2.</strong> Wgpu Initialization</a></li><li class="chapter-item expanded "><a href="pipeline.html"><strong aria-hidden="true">3.</strong> Pipeline</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="rendering.html" class="active"><strong aria-hidden="true">3.1.</strong> Rendering</a></li><li class="chapter-item expanded "><a href="shader.html"><strong aria-hidden="true">3.2.</strong> Creating the shader</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.3.</strong> Creating a Pipeline</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.4.</strong> Shaders in detail</div></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.</strong> Buffers</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">5.</strong> Uniforms</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">6.</strong> Textures</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">7.</strong> Transformations</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">8.</strong> Coordinate space</div></li><li class="chapter-item expanded affix "><li class="part-title">Intermediate</li><li class="chapter-item expanded "><div><strong aria-hidden="true">9.</strong> Perspective camera</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">10.</strong> Meshes</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">11.</strong> Lighting</div></li><li class="chapter-item expanded affix "><li class="part-title">Examples</li><li class="chapter-item expanded "><div><strong aria-hidden="true">12.</strong> Snake game</div></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">Introduction</a></li><li class="chapter-item expanded affix "><li class="part-title">Basics</li><li class="chapter-item expanded "><a href="window.html"><strong aria-hidden="true">1.</strong> Window Creation</a></li><li class="chapter-item expanded "><a href="wgpu_init.html"><strong aria-hidden="true">2.</strong> Wgpu Initialization</a></li><li class="chapter-item expanded "><a href="pipeline.html"><strong aria-hidden="true">3.</strong> Pipeline</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="rendering.html"><strong aria-hidden="true">3.1.</strong> Rendering</a></li><li class="chapter-item expanded "><a href="shader.html" class="active"><strong aria-hidden="true">3.2.</strong> Creating the shader</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.3.</strong> Creating a Pipeline</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.4.</strong> Shaders in detail</div></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.</strong> Buffers</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">5.</strong> Uniforms</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">6.</strong> Textures</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">7.</strong> Transformations</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">8.</strong> Coordinate space</div></li><li class="chapter-item expanded affix "><li class="part-title">Intermediate</li><li class="chapter-item expanded "><div><strong aria-hidden="true">9.</strong> Perspective camera</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">10.</strong> Meshes</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">11.</strong> Lighting</div></li><li class="chapter-item expanded affix "><li class="part-title">Examples</li><li class="chapter-item expanded "><div><strong aria-hidden="true">12.</strong> Snake game</div></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -134,26 +134,65 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="rendering"><a class="header" href="#rendering">Rendering</a></h1>
-<p>As you probably know to render graphics we use the GPU. What you may not know is <em>how</em> the GPU can render graphics.
-Rendering is done through some steps, each one processing the output of the previous one, this is what we call the <strong>pipeline</strong>.</p>
-<p>In graphics we usually draw polygons starting with triangles since those are very simple and efficient to draw for a GPU, to draw a triangle we need 3 <em>vertices</em> and we can represent a vertex with 3 positions since we are in a 3d space. So the first step is to pass the vertices positions to our pipeline.</p>
-<p><img src="images/vertex_input.png" alt="Vertex Input" /></p>
-<p>Now we can go into the first step of the pipeline, the <strong>vertex stage</strong>, here we may want to change the position of each vertex to do things like transformations or projections. The output of the vertex stage is then sent to the shape assembly, here the GPU creates the triangle with the given positions and its output is then sent to the <strong>rasterization stage</strong>. In this stage the GPU checks which pixels are contained by the triangle so that they can be later colored in the <strong>fragmentation stage</strong>.</p>
-<p>We usually control this behaviours using <strong>shaders</strong>. Shaders are programs written by us but instead of running on our CPU like other programs, shaders run on the GPU. Indeed we cannot write shaders in languages like Rust or C, we need to use a <strong>shading language</strong>. There are many shading languages out there like <strong>GLSL</strong>, <strong>MSL</strong>, <strong>HLSL</strong> and <strong>WGSL</strong>. <strong>WGSL</strong> is the de-facto shading language for wgpu and I'll use that in this book.</p>
-<blockquote>
-<p><strong>Note:</strong> Wgpu also supports <strong>SPIR-V</strong> which is a specification made by the Khronos Group (the team behind OpenGL and Vulkan) so you can use any language which compiles to <strong>SPIR-V</strong> as shading language.</p>
-</blockquote>
+                        <h1 id="creating-the-shader"><a class="header" href="#creating-the-shader">Creating the shader</a></h1>
+<p>First, we need to add the pipeline as a member of our <code>Renderer</code></p>
+<pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct Renderer {
+    surface: wgpu::Surface,
+    surface_config: wgpu::SurfaceConfiguration,
+    device: wgpu::Device,
+    queue: wgpu::Queue,
+    render_pipeline: wgpu::RenderPipeline, // NEW
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>Next we need to create the shader module for our pipeline, let's create a new file</p>
+<p><em>src/shader.wgsl</em></p>
+<pre><code class="language-wgsl">struct VertexInput {
+    @location(0) pos: vec3&lt;f32&gt;,
+}
+</code></pre>
+<p>Here we're defining the input for our vertex stage, with the <code>@location(0)</code> attribute we're telling the shader where this position should be taken from, and since we are using this as input for our vertex stage the value will be taken from the first position (0) in the vertex input (we will define the input in rust later on).</p>
+<p>We also need to define an output for our stage</p>
+<p><em>src/shader.wgsl</em></p>
+<pre><code class="language-wgsl">...
+
+struct VertexOutput {
+    @builtin(position) pos: vec4&lt;f32&gt;
+}
+</code></pre>
+<p>Now we're using another attribte, <code>@builtin</code>. This attribute is used to speicfy that the value is one of the builtin values of wgsl.</p>
+<p><em>src/shader.wgsl</em></p>
+<pre><code class="language-wgsl">...
+
+@vertex
+fn vertex_main(in: VertexInput) -&gt; VertexOutput {
+    var out: VertexOutput;
+
+    out.pos = vec4&lt;f32&gt;(in.pos, 1.0);
+
+    return out;
+}
+</code></pre>
+<p>And finally we have our vertex stage defined, it will just take the position from the input and copy it in the output. With the <code>@vertex</code> attribute we're specifying that this part of the shader is in the vertex stage.</p>
+<p>Now that we have our vertex shader we need to create a <strong>fragment shader</strong>. As we said in the previous chapter, the fragment shader is needed to give a color to the pixels that compose the triangle we are drawing. In this example we're creating a fragment shader which has a fixed red color for every pixel we draw.</p>
+<p><em>src/shader.wgsl</em></p>
+<pre><code class="language-wgsl">...
+
+@fragment
+fn fragment_main(in: VertexOutput) -&gt; @location(0) vec4&lt;f32&gt; {
+    return vec4&lt;f32&gt;(1.0, 0.0, 0.0, 1.0);
+}
+</code></pre>
+<p>This is pretty easy, we're taking the output from the previous stage (vertex) as input for the fragment stage and we're returning the color red in RGBA.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="pipeline.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="rendering.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
-                            </a>
-                            <a rel="next" href="shader.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                                <i class="fa fa-angle-right"></i>
                             </a>
                         <div style="clear: both"></div>
                     </nav>
@@ -161,11 +200,8 @@ Rendering is done through some steps, each one processing the output of the prev
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="pipeline.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="rendering.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
-                    </a>
-                    <a rel="next" href="shader.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                        <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
 
